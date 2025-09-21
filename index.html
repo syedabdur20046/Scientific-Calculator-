@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Scientific Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80') no-repeat center center/cover;
+            padding: 20px;
+        }
+
+        .calculator-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .calculator {
+            background: rgba(25, 25, 35, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5),
+                        0 0 0 1px rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .calculator::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(74, 144, 226, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .brand {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #4a90e2;
+        }
+
+        .display {
+            background: rgba(15, 15, 20, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            font-size: 2.5rem;
+            text-align: right;
+            margin-bottom: 20px;
+            color: #fff;
+            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.5);
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            word-break: break-all;
+            overflow: hidden;
+            font-variant-numeric: tabular-nums;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .modes {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .modes button {
+            background: rgba(60, 60, 75, 0.8);
+            border: none;
+            border-radius: 10px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .modes button.active {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+        }
+
+        .modes button:hover {
+            background: rgba(80, 80, 95, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .memory {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .memory button {
+            flex: 1;
+            background: rgba(60, 60, 75, 0.8);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .memory button:hover {
+            background: rgba(80, 80, 95, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .dropdowns {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .dropdowns select {
+            flex: 1;
+            background: rgba(60, 60, 75, 0.8);
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+            padding-right: 35px;
+        }
+
+        .dropdowns select option {
+            background: rgba(40, 40, 50, 0.95);
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .buttons button {
+            background: rgba(50, 50, 65, 0.8);
+            border: none;
+            border-radius: 12px;
+            padding: 16px 8px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .buttons button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            clip-path: circle(0% at 50% 50%);
+            transition: clip-path 0.3s ease;
+        }
+
+        .buttons button:active::before {
+            clip-path: circle(100% at 50% 50%);
+        }
+
+        .buttons button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .buttons button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .buttons .equal {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+            font-weight: 600;
+        }
+
+        .buttons .equal:hover {
+            background: linear-gradient(135deg, #357abd, #2a65a0);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.5);
+        }
+
+        .buttons .func {
+            color: #4a90e2;
+            font-weight: 500;
+        }
+
+        .buttons .op {
+            color: #ff9500;
+            font-weight: 500;
+        }
+
+        .buttons .clear {
+            color: #ff3b30;
+            font-weight: 500;
+        }
+
+        .buttons .const {
+            color: #34c759;
+            font-weight: 500;
+        }
+
+        .buttons .num {
+            font-weight: 500;
+        }
+
+        .sound-toggle {
+            margin-top: 20px;
+            background: rgba(25, 25, 35, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        .sound-toggle:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .sound-toggle.muted {
+            color: #ff3b30;
+        }
+
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 15px;
+                border-radius: 20px;
+            }
+            
+            .display {
+                font-size: 2rem;
+                padding: 15px;
+                min-height: 80px;
+            }
+            
+            .buttons button {
+                padding: 14px 5px;
+                font-size: 1.1rem;
+                border-radius: 10px;
+            }
+        }
+
+        /* Animation for display changes */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .display.changed {
+            animation: fadeIn 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator">
+            <div class="header">
+                <div class="brand">SCIENTIFIC CALCULATOR</div>
+                <div class="mode-indicator">DEG</div>
+            </div>
+            <div class="display" id="display">0</div>
+            <div class="modes">
+                <button id="deg" class="active">DEG</button>
+                <button id="rad">RAD</button>
+                <button id="fe">F-E</button>
+            </div>
+            <div class="memory">
+                <button class="mem" data-action="mc">MC</button>
+                <button class="mem" data-action="mr">MR</button>
+                <button class="mem" data-action="m+">M+</button>
+                <button class="mem" data-action="m-">M-</button>
+                <button class="mem" data-action="ms">MS</button>
+                <button class="mem" data-action="m-down">M▼</button>
+            </div>
+            <div class="dropdowns">
+                <select id="trigonometry">
+                    <option>Trigonometry</option>
+                    <option>sin</option>
+                    <option>cos</option>
+                    <option>tan</option>
+                    <option>asin</option>
+                    <option>acos</option>
+                    <option>atan</option>
+                </select>
+                <select id="function">
+                    <option>Function</option>
+                    <option>sinh</option>
+                    <option>cosh</option>
+                    <option>tanh</option>
+                    <option>asinh</option>
+                    <option>acosh</option>
+                    <option>atanh</option>
+                </select>
+            </div>
+            <div class="buttons">
+                <button class="func" data-value="2nd">2nd</button>
+                <button class="const" data-value="Math.PI">π</button>
+                <button class="const" data-value="Math.E">e</button>
+                <button class="clear" data-value="C">C</button>
+                <button class="back" data-value="←">←</button>
+                <button class="func" data-value="**2">x²</button>
+                <button class="func" data-value="1/">1/x</button>
+                <button class="func" data-value="Math.abs(">|x|</button>
+                <button class="func" data-value="Math.exp(">exp</button>
+                <button class="op" data-value=" % ">mod</button>
+                <button class="func" data-value="Math.sqrt(">√</button>
+                <button class="op" data-value="(">(</button>
+                <button class="op" data-value=")">)</button>
+                <button class="func" data-value="factorial(">n!</button>
+                <button class="op" data-value="/">÷</button>
+                <button class="func" data-value="**">x^y</button>
+                <button class="num" data-value="7">7</button>
+                <button class="num" data-value="8">8</button>
+                <button class="num" data-value="9">9</button>
+                <button class="op" data-value="*">×</button>
+                <button class="func" data-value="10**">10^x</button>
+                <button class="num" data-value="4">4</button>
+                <button class="num" data-value="5">5</button>
+                <button class="num" data-value="6">6</button>
+                <button class="op" data-value="-">-</button>
+                <button class="func" data-value="Math.log10(">log</button>
+                <button class="num" data-value="1">1</button>
+                <button class="num" data-value="2">2</button>
+                <button class="num" data-value="3">3</button>
+                <button class="op" data-value="+">+</button>
+                <button class="func" data-value="Math.log(">ln</button>
+                <button class="func" data-value="+/-">+/-</button>
+                <button class="num" data-value="0">0</button>
+                <button class="num" data-value=".">.</button>
+                <button class="equal" data-value="=">=</button>
+            </div>
+        </div>
+        <button class="sound-toggle" id="soundToggle">
+            <i class="fas fa-volume-up"></i>
+        </button>
+    </div>
+
+    <script>
+        let displayValue = '0';
+        const display = document.getElementById('display');
+        let memory = 0;
+        let isDeg = true;
+        let soundEnabled = true;
+        
+        // Create audio context for sound effects
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioContext = new AudioContext();
+        
+        // Function to play sound
+        function playSound(frequency, type = 'sine', duration = 0.1) {
+            if (!soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = type;
+            oscillator.frequency.value = frequency;
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+        
+        // Custom Math object
+        function getCustomMath() {
+            const cm = {
+                ...Math,
+                log: Math.log10,
+                ln: Math.log,
+                factorial: function(n) {
+                    n = parseFloat(n);
+                    if (isNaN(n) || n < 0 || !Number.isInteger(n)) return NaN;
+                    if (n === 0 || n === 1) return 1;
+                    let result = 1;
+                    for (let i = 2; i <= n; i++) result *= i;
+                    return result;
+                }
+            };
+            if (isDeg) {
+                const toRad = x => x * Math.PI / 180;
+                const toDeg = x => x * 180 / Math.PI;
+                cm.sin = x => Math.sin(toRad(x));
+                cm.cos = x => Math.cos(toRad(x));
+                cm.tan = x => Math.tan(toRad(x));
+                cm.asin = x => toDeg(Math.asin(x));
+                cm.acos = x => toDeg(Math.acos(x));
+                cm.atan = x => toDeg(Math.atan(x));
+                cm.sinh = Math.sinh;
+                cm.cosh = Math.cosh;
+                cm.tanh = Math.tanh;
+                cm.asinh = Math.asinh;
+                cm.acosh = Math.acosh;
+                cm.atanh = Math.atanh;
+            }
+            return cm;
+        }
+
+        // Update display
+        function updateDisplay() {
+            display.innerText = displayValue;
+            display.classList.add('changed');
+            setTimeout(() => display.classList.remove('changed'), 300);
+        }
+
+        // Append to display
+        function appendToDisplay(value) {
+            if (displayValue === '0' || displayValue === 'Error') {
+                displayValue = value;
+            } else {
+                displayValue += value;
+            }
+            updateDisplay();
+        }
+
+        // Calculate
+        function calculate() {
+            let exp = displayValue;
+            // Replace ÷ with /, × with *
+            exp = exp.replace(/÷/g, '/').replace(/×/g, '*');
+            // For factorial, replace n! with factorial(n), but only for simple cases
+            exp = exp.replace(/([0-9.]+)!/g, 'factorial($1)');
+            try {
+                const cm = getCustomMath();
+                const result = new Function('return eval("' + exp + '");').call(cm);
+                if (isNaN(result) || result === Infinity) throw new Error('Invalid');
+                return result;
+            } catch (e) {
+                return 'Error';
+            }
+        }
+
+        // Button events
+        document.querySelectorAll('.buttons button').forEach(button => {
+            button.addEventListener('click', () => {
+                const value = button.dataset.value;
+                playSound(523.25, 'square', 0.1); // C5 note
+                
+                if (value === 'C') {
+                    displayValue = '0';
+                } else if (value === '←') {
+                    displayValue = displayValue.slice(0, -1) || '0';
+                } else if (value === '=') {
+                    playSound(659.25, 'sine', 0.3); // E5 note for equals
+                    displayValue = calculate();
+                } else if (value === '+/-') {
+                    if (displayValue !== '0') {
+                        displayValue = displayValue.startsWith('-') ? displayValue.slice(1) : '-' + displayValue;
+                    }
+                } else if (value === '÷') {
+                    appendToDisplay('/');
+                } else if (value === '×') {
+                    appendToDisplay('*');
+                } else {
+                    appendToDisplay(value);
+                }
+                updateDisplay();
+            });
+        });
+
+        // Memory buttons
+        document.querySelectorAll('.mem').forEach(button => {
+            button.addEventListener('click', () => {
+                playSound(392.00, 'triangle', 0.2); // G4 note
+                const action = button.dataset.action;
+                const current = parseFloat(displayValue) || 0;
+                if (action === 'mc') {
+                    memory = 0;
+                } else if (action === 'mr') {
+                    displayValue = memory.toString();
+                } else if (action === 'm+') {
+                    memory += current;
+                } else if (action === 'm-') {
+                    memory -= current;
+                } else if (action === 'ms') {
+                    memory = current;
+                } else if (action === 'm-down') {
+                    // Show memory
+                    alert('Memory: ' + memory);
+                }
+                updateDisplay();
+            });
+        });
+
+        // Mode toggle
+        document.getElementById('deg').addEventListener('click', () => {
+            playSound(349.23, 'sine', 0.2); // F4 note
+            isDeg = true;
+            document.getElementById('deg').classList.add('active');
+            document.getElementById('rad').classList.remove('active');
+            document.querySelector('.mode-indicator').textContent = 'DEG';
+        });
+
+        document.getElementById('rad').addEventListener('click', () => {
+            playSound(349.23, 'sine', 0.2); // F4 note
+            isDeg = false;
+            document.getElementById('rad').classList.add('active');
+            document.getElementById('deg').classList.remove('active');
+            document.querySelector('.mode-indicator').textContent = 'RAD';
+        });
+
+        // F-E button
+        document.getElementById('fe').addEventListener('click', () => {
+            playSound(392.00, 'sine', 0.2); // G4 note
+            // Toggle between normal and scientific notation
+            if (displayValue !== 'Error') {
+                const num = parseFloat(displayValue);
+                if (!isNaN(num)) {
+                    if (displayValue.includes('e')) {
+                        displayValue = num.toFixed(10).replace(/\.?0+$/, '');
+                    } else {
+                        displayValue = num.toExponential(5);
+                    }
+                    updateDisplay();
+                }
+            }
+        });
+
+        // Dropdowns
+        document.getElementById('trigonometry').addEventListener('change', e => {
+            playSound(440.00, 'sine', 0.2); // A4 note
+            const val = e.target.value;
+            if (val !== 'Trigonometry') {
+                appendToDisplay(val + '(');
+            }
+            e.target.value = 'Trigonometry';
+        });
+
+        document.getElementById('function').addEventListener('change', e => {
+            playSound(440.00, 'sine', 0.2); // A4 note
+            const val = e.target.value;
+            if (val !== 'Function') {
+                appendToDisplay(val + '(');
+            }
+            e.target.value = 'Function';
+        });
+
+        // Sound toggle
+        document.getElementById('soundToggle').addEventListener('click', function() {
+            soundEnabled = !soundEnabled;
+            this.classList.toggle('muted');
+            this.innerHTML = soundEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute"></i>';
+            playSound(523.25, 'sine', 0.1); // Feedback sound
+        });
+
+        // Keyboard handling
+        document.addEventListener('keydown', e => {
+            if (e.key >= '0' && e.key <= '9') {
+                appendToDisplay(e.key);
+                playSound(523.25, 'square', 0.1);
+            }
+            if (e.key === '.') {
+                appendToDisplay('.');
+                playSound(523.25, 'square', 0.1);
+            }
+            if (e.key === '+') {
+                appendToDisplay('+');
+                playSound(587.33, 'square', 0.1);
+            }
+            if (e.key === '-') {
+                appendToDisplay('-');
+                playSound(587.33, 'square', 0.1);
+            }
+            if (e.key === '*') {
+                appendToDisplay('*');
+                playSound(587.33, 'square', 0.1);
+            }
+            if (e.key === '/') {
+                appendToDisplay('/');
+                playSound(587.33, 'square', 0.1);
+            }
+            if (e.key === '%') {
+                appendToDisplay('%');
+                playSound(587.33, 'square', 0.1);
+            }
+            if (e.key === '(') {
+                appendToDisplay('(');
+                playSound(587.33, 'square', 0.1);
+            }
+            if (e.key === ')') {
+                appendToDisplay(')');
+                playSound(587.33, 'square', 0.1);
+            }
+            if (e.key === 'Enter') {
+                playSound(659.25, 'sine', 0.3);
+                displayValue = calculate();
+                updateDisplay();
+            }
+            if (e.key === 'Backspace') {
+                playSound(392.00, 'square', 0.1);
+                displayValue = displayValue.slice(0, -1) || '0';
+                updateDisplay();
+            }
+            if (e.key === 'Escape') {
+                playSound(392.00, 'square', 0.2);
+                displayValue = '0';
+                updateDisplay();
+            }
+        });
+    </script>
+</body>
+</html>
